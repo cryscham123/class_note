@@ -1,0 +1,19 @@
+---
+title: 전체 게시글
+page-layout: full
+listing:
+  contents: ./
+  categories: true
+  feed: true
+  type: table
+  fields: ['title', 'date', 'categories']
+  sort: 
+    - "date desc"
+    - "title desc"
+  date-format: "YYYY-MM-DD"
+  page-size: 10
+  sort-ui: [date, title]
+  filter-ui: true
+  exclude:
+    filename: 'index.qmd'
+---

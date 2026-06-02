@@ -1,0 +1,9 @@
+*.pdf
+*.m4a
+*.txt
+_site/**
+.quarto/**
+.antigravitycli/**
+.agents/**
+.codex/**
+origin/**

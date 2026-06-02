@@ -1,0 +1,40 @@
+project:
+  type: website
+  output-dir: _site
+  render:
+    - "**/*.qmd"
+    - "!CLAUDE.md"
+  preview:
+    host: '0.0.0.0'
+    port: 5000
+    browser: false
+
+website:
+  title: "2026-1 강의 노트"
+  sidebar:
+    collapse-level: 1
+    contents:
+      - section: "Blockchain"
+        contents: blockchain/notes/**
+      - section: "Data Analytics"
+        contents: data_analytics/notes/**
+      - section: "Chemistry"
+        contents: chemistry/notes/**
+  bread-crumbs: true
+  back-to-top-navigation: true
+  page-navigation: true
+
+format:
+  html:
+    theme: [cosmo, cornell.scss]
+    toc: true
+    toc-depth: 3
+    toc-title: "목차"
+
+    lang: ko
+    page-layout: article
+    mainfont: "Noto Sans KR"
+    monofont: "JetBrains Mono"
+    highlight-style: github
+    code-fold: true
+    df-print: paged

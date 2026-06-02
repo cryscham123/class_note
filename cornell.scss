@@ -1,0 +1,124 @@
+/*-- scss:defaults --*/
+$body-bg: #fafaf8;
+$body-color: #1a1a1a;
+$link-color: #2563eb;
+$font-size-root: 16px;
+
+$headings-color: #1e3a5f;
+
+/*-- scss:rules --*/
+
+/* ── 전체 레이아웃 ── */
+body {
+  font-family: "Noto Sans KR", sans-serif;
+  line-height: 1.75;
+}
+
+/* ── 페이지 제목 ── */
+#title-block-header {
+  border-bottom: 3px solid #1e3a5f;
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+
+  .title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1e3a5f;
+  }
+  .date {
+    color: #6b7280;
+    font-size: 0.9rem;
+  }
+}
+
+/* ── margin 컬럼 (Cornell 큐 영역) — Quarto 네이티브 위치 지정 사용 ── */
+.column-margin {
+  font-size: 0.82rem;
+  color: #374151;
+
+  strong { color: #1e3a5f; }
+  p { margin: 0 0 0.4rem; }
+}
+
+/* ── 핵심 질문 박스 ── */
+.key-questions {
+  background: #eef2f7;
+  border-left: 4px solid #1e3a5f;
+  border-radius: 4px;
+  padding: 0.8rem 1.2rem;
+  margin: 1.5rem 0;
+
+  &::before {
+    content: "🔑 핵심 질문";
+    display: block;
+    font-weight: 700;
+    color: #1e3a5f;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* ── 강의 요약 (Cornell 하단) ── */
+.lecture-summary {
+  background: #fffbeb;
+  border: 2px solid #f59e0b;
+  border-radius: 6px;
+  padding: 1.2rem 1.5rem;
+  margin-top: 3rem;
+
+  &::before {
+    content: "📋 강의 요약";
+    display: block;
+    font-weight: 700;
+    color: #92400e;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+  }
+}
+
+/* ── callout 커스텀 ── */
+.callout-note {
+  border-left-color: #2563eb;
+  background: #eff6ff;
+}
+
+.callout-tip {
+  border-left-color: #059669;
+  background: #ecfdf5;
+}
+
+.callout-warning {
+  border-left-color: #d97706;
+}
+
+/* ── 개념 연결 섹션 ── */
+h2#개념-연결 {
+  color: #6d28d9;
+  border-bottom: 2px dashed #c4b5fd;
+  padding-bottom: 0.3rem;
+}
+
+/* ── TOC ── */
+#TOC {
+  border-left: 3px solid #1e3a5f;
+  padding-left: 1rem;
+
+  .nav-link.active {
+    color: #1e3a5f;
+    font-weight: 600;
+  }
+}
+
+/* ── 코드 블록 ── */
+pre {
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+/* ── Mermaid 다이어그램 ── */
+.mermaid {
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+figcaption { text-align: center; }

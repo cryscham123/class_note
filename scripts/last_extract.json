@@ -1,0 +1,28 @@
+[
+  {
+    "source": "화학-9장. 열화학-화학에너지(26)핵심.goodnotes",
+    "subject": "chemistry",
+    "audio": [
+      {
+        "file": "chemistry/audio/9-26_part1_43min.m4a",
+        "min": 43,
+        "creation_time": "2026-06-01T02:50:25.000000Z"
+      },
+      {
+        "file": "chemistry/audio/9-26_part2_11min.m4a",
+        "min": 11,
+        "creation_time": "2026-06-01T03:07:54.000000Z"
+      },
+      {
+        "file": "chemistry/audio/9-26_part3_3min.m4a",
+        "min": 3,
+        "creation_time": "2026-06-01T03:11:08.000000Z"
+      }
+    ],
+    "pdf": [
+      "chemistry/pdf/9-26.pdf"
+    ],
+    "date_hint": "2026-06-01",
+    "moved_to_done": true
+  }
+]
