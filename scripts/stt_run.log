@@ -1,0 +1,48 @@
+== 39개 오디오 검토 ==
+🎧 blockchain/audio/21_26min.m4a
+   ↳ 26min [whisper-1]
+   ✅ blockchain/transcript/21_26min.txt  (ratio=0.58)
+⏭  blockchain/audio/blockchain12_18min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  blockchain/audio/blockchain13_22min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  blockchain/audio/blockchain14_34min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  blockchain/audio/blockchain15_47min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  blockchain/audio/blockchain16_21min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  blockchain/audio/blockchain17_22min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  blockchain/audio/blockchain18_11min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  blockchain/audio/blockchain19_35min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  blockchain/audio/blockchain20_29min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  data_analytics/audio/20_neural_networks_61min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  data_analytics/audio/21_deep_neural_networks_part1_1min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  data_analytics/audio/21_deep_neural_networks_part2_70min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  data_analytics/audio/22_-image_applications_representation_learning_46min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  data_analytics/audio/23_recommender_systems_part1_18min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  data_analytics/audio/23_recommender_systems_part2_43min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  data_analytics/audio/25_text_analytics_part1_19min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  data_analytics/audio/25_text_analytics_part2_48min.m4a  (transcript 이미 있음, --force 로 재전사)
+🎧 data_analytics/audio/26_word_embedding_part1_13min.m4a
+   ↳ 13min [gpt-4o-transcribe]
+   ✅ data_analytics/transcript/26_word_embedding_part1_13min.txt  (ratio=0.53)
+🎧 data_analytics/audio/26_word_embedding_part2_51min.m4a
+   ↳ 51min [whisper-1]
+   ✅ data_analytics/transcript/26_word_embedding_part2_51min.txt  (ratio=0.42)
+⏭  data_analytics/audio/decision_trees_part1_24min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  data_analytics/audio/decision_trees_part2_45min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  data_analytics/audio/decision_trees_practice_17min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  data_analytics/audio/ensemble_methods_62min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  data_analytics/audio/ensemble_methods_practice_29min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  data_analytics/audio/svm_part1_16min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  data_analytics/audio/svm_part2_47min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  data_analytics/audio/svm_part3_53min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  data_analytics/audio/svm_practice_41min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  chemistry/audio/9-26_part1_43min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  chemistry/audio/9-26_part2_11min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  chemistry/audio/9-26_part3_3min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  chemistry/audio/chem5_part1_8min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  chemistry/audio/chem5_part2_51min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  chemistry/audio/chem6_part1_11min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  chemistry/audio/chem6_part2_40min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  chemistry/audio/chem7_part1_38min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  chemistry/audio/chem7_part2_1min.m4a  (transcript 이미 있음, --force 로 재전사)
+⏭  chemistry/audio/chem7_part3_15min.m4a  (transcript 이미 있음, --force 로 재전사)
+
+다음 단계: transcript 교정 + Quarto 노트(.qmd) 작성은 판단이 필요한 단계라 사람/LLM 이 직접 (CLAUDE.md 워크플로 3~4).

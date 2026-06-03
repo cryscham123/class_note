@@ -7,3 +7,6 @@ _site/**
 .agents/**
 .codex/**
 origin/**
+
+/.quarto/
+**/__pycache__/**

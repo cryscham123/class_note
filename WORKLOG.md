@@ -24,7 +24,29 @@
 
 ---
 
-## 2026-06-01 15:25 — 화학 9장 열화학·화학에너지 노트 작성
+## 2026-06-02 16:40 — DA 25/26 + 블록체인 21 노트 작성
+**상태**: 완료 (Claude 직접 작성·검증)
+
+### 계획
+- [x] `extract.py` 로 3개 .goodnotes 추출 (audio/pdf 분리, done/ 이동)
+- [x] `stt.py --all` 전사 (26 part1 13min→gpt-4o, 26 part2 51min·BC21 26min→whisper-1)
+- [x] 전사 환각 루프(ratio) 검사 — 전부 정상 (25: 0.59/0.45, 26: 0.54/0.42, BC21: 0.58)
+- [x] DA 25 text analytics 노트 작성 + 단일 render
+- [x] DA 26 word embedding 노트 작성 + 단일 render
+- [x] 블록체인 21 노트 작성 + 단일 render
+- [x] 전체 `quarto render` 로 리스팅 갱신 (24개 전부 성공, _site/index.html 생성)
+
+### 산출물
+- `data_analytics/notes/2026-05-28_25-text-analytics.qmd` (BoW/DTM/TF-IDF, R tm 실습 F1 0.82)
+- `data_analytics/notes/2026-06-02_26-word-embedding.qmd` (Word2Vec/Skip-gram, GloVe, 풀링, F1 0.865)
+- `blockchain/notes/2026-06-01_21-mev.qmd` (MEV: 아비트라지/청산/샌드위치, 멤풀, 가스경쟁/중앙화)
+
+### 문제 / 이슈
+- date 멀티데이: 25(part1 05-26 / part2 48min 05-28), 26(part1 05-28 / part2 51min 06-02). 본체(최장 part) 기준 → 25=05-28, 26=06-02 로 확정. ⚠️ 오너 최종 확인 권장.
+
+### 비고
+- 25_text_analytics 는 이전에 transcript/done 존재(부분 처리)였고 노트만 없었음 → 이번에 작성 완료.
+
 **상태**: 승인 (codex 작성 → Claude 리뷰 반영)
 
 ### 리뷰 (Claude, 2026-06-01 15:36)
