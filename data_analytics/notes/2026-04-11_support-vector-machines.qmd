@@ -162,6 +162,26 @@ $$f(x) = \beta_0 + \sum_{i \in \mathcal{S}} \alpha_i \langle x_i, x \rangle \qua
 
 $\alpha_i$ 추정에는 모든 데이터 쌍에 대한 $\binom{n}{2}=\tfrac{n(n-1)}{2}$개의 내적이, 새 데이터 분류에는 support vector와의 내적만 필요하다. → **반복적인 내적 계산이 병목**.
 
+::: {.callout-note title="부연 — 쌍대 형식 한눈에 (관점 전환)"}
+- **무엇이 바뀌었나**: 원래 형태 $f(x)=\beta_0+\beta_1x_1+\cdots+\beta_px_p$ 는 **feature(축)마다 가중치 $\beta_j$** 를 둔다. 쌍대 형식은 **데이터 점마다 가중치 $\alpha_i$** 를 둔다. 같은 직선을 다르게 쓴 것일 뿐.
+- **왜 같나**: 결정경계의 방향 $\beta$ 는 데이터 점들의 조합으로 쓸 수 있다 — $\beta=\sum_i \alpha_i x_i$. 직관: $\beta$ 중 모든 데이터와 직교하는 성분은 어떤 점의 예측도 못 바꾸면서 $\lVert\beta\rVert$ 만 키우므로, margin 최대화( $\lVert\beta\rVert$ 최소화) 과정에서 0으로 깎인다. 그래서 최적 $\beta$ 는 데이터가 펼치는 공간 안에만 존재. 이를 $\langle\beta,x\rangle$ 에 대입하면 $\sum_i\alpha_i\langle x_i,x\rangle$.
+- **말로 풀면**: 새 점 $x$ 를 "각 학습점 $x_i$ 와 얼마나 닮았나( $\langle x_i,x\rangle$ )"에 가중치 $\alpha_i$ 를 곱해 합산 → 부호로 클래스 판정. "너랑 비슷한 과거 예시들이 투표"하는 구조.
+:::
+
+::: {.callout-note title="부연 — 첨자 $i$·$j$ 와 $x$ 의 의미"}
+- $i$ = **데이터 점** 인덱스 $(1\dots n)$, $j$ = **feature(변수)** 인덱스 $(1\dots p)$. 즉 $x_{ij}$ = $i$번째 데이터의 $j$번째 feature 값 (행렬로 보면 $i$행 $j$열).
+- 안쪽 합 $\langle x_i,x\rangle=\sum_j x_{ij}x_j$ 는 두 점의 feature를 짝지어 곱해 더한 것. 바깥 합 $\sum_i$ 는 데이터 점들에 대한 가중합.
+- **$x$ = 분류하려는 새 데이터 점.** 단, $\alpha_i$ 를 **학습**할 땐 $x$ 자리에 다른 학습점이 들어가 학습점끼리의 내적 $\langle x_i,x_k\rangle$ 을 쓴다(자기 자신과의 $\langle x_i,x_i\rangle=\lVert x_i\rVert^2$ 도 포함). **예측**할 때만 $x$ 가 진짜 새 점.
+- 계산량 표기: $\binom{n}{2}$ 는 서로 다른 쌍을 대칭 고려해 센 수이고, 자기내적까지 포함한 전체 그람 행렬은 $n\times n$. 어느 쪽이든 복잡도는 **$O(n^2)$** 로 동일 — 본문 표기 그대로 맞음.
+:::
+
+::: {.callout-note title="부연 — margin 최대화 = $\lVert\beta\rVert$ 최소화 (section 2 보충)"}
+1. 점에서 경계까지 수직거리 $=\lvert f(x)\rvert/\lVert\beta\rVert$ ( $f$ 값을 $\lVert\beta\rVert$ 로 정규화해 순수 거리로).
+2. $(\beta,\beta_0)$ 에 같은 상수를 곱해도 경계 선은 불변(스케일 자유도) → 최근접 점(support vector)에서 $y_i f(x_i)=1$ 이 되도록 크기를 고정.
+3. 그러면 margin 폭 $=1/\lVert\beta\rVert$.
+4. 따라서 margin 최대화 $\Leftrightarrow$ $\lVert\beta\rVert$ 최소화. 제약 $y_i(\beta_0+\beta^\top x_i)\ge 1$ 과 합쳐 $\min \tfrac12\lVert\beta\rVert^2$ — section 2의 최적화 문제가 이것.
+:::
+
 ## 6. 커널 (Kernel Trick)
 
 ::: {.column-margin}
@@ -217,6 +237,15 @@ SVM은 두 클래스용이므로 $K$개 클래스는 다음 두 방식으로 확
 
 - **One-Versus-One (OvO)**: 모든 클래스 쌍에 대해 $\binom{K}{2}$개의 SVM 학습. 새 데이터는 각 모델의 예측 중 **가장 많이 선택된** 클래스로 분류 (다수결).
 - **One-Versus-All (OvA)**: 한 클래스 vs 나머지 전부로 $K$개의 SVM 학습. 새 데이터는 margin 값 $f(x^*)$가 **가장 큰** 클래스로 분류.
+
+![One-vs-All 다중분류: 클러스터 3개와 각 'k vs 나머지' 경계. 새 점 $x^*$ 에서 각 경계까지의 부호거리 $f_k$ 중 **부호 포함 최대값**인 클래스로 분류 ($f_A=+0.57$ 최대 → A).](img/svm-ova-multiclass.png){#fig-ova width=85%}
+
+::: {.callout-note title="부연 — OvA 결정 규칙 (학습 vs 예측)"}
+- **학습**: "k vs 나머지" 이진 SVM을 $k=1\dots K$ 번 **독립적으로** 따로 학습한다(@fig-ova 의 세 경계는 서로 다른 학습의 산물). 한 번에 셋을 같이 푸는 게 아님.
+- **예측**: 새 점 $x^*$ 를 $K$개 모델에 각각 넣어 점수 $f_k(x^*)$ 를 구한 뒤, 그 $K$개 중 **부호 포함 최대값**( $\arg\max_k f_k$ )인 클래스로 보낸다.
+- $f_k(x^*)$ 는 부호거리라 $f_k>0$ = "$x^*$ 는 $k$쪽", 클수록 그 영역에 더 깊이(=더 확신). **절댓값이 아니라 부호 있는 값**으로 비교한다 — 큰 음수는 "절대 그 클래스 아님"이라 탈락.
+- 모든 $f_k<0$ 인 애매지대에서도 규칙은 동일: 가장 덜 음수(=최대)인 클래스 선택.
+:::
 
 ## 개념 연결
 

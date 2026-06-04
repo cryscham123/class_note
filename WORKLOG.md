@@ -24,6 +24,186 @@
 
 ---
 
+## 2026-06-03 23:54 — DA 23강 추천시스템 리서치 (①-B codex 리서처)
+**상태**: 완료
+
+### 계획
+- [x] `CLAUDE.md` 리서처 위임 규약·DoD 확인
+- [x] transcript 2개와 PDF를 읽고 강의 실제 토픽 파악
+- [x] official 소스만 사용해 항목별 fact-check 근거·부연설명 후보·이미지 후보 조사
+- [x] `data_analytics/notes/_research/23-recommender-systems.md` 작성
+- [x] 리서치 노트 자체 검토: 출처 URL·이미지 라이선스·충돌 플래그 누락 확인
+- [x] `WORKLOG.md`에 `리서치: 완료` 기록
+
+### 문제 / 이슈
+- 없음
+
+### 비고
+- 출력: `data_analytics/notes/_research/23-recommender-systems.md`
+- 리서치: 완료
+- 금지: `.qmd`, `origin/`, `transcript/`, `audio/`, `_legacy/` 수정하지 않음.
+
+## 2026-06-03 23:52 — DA 23강 추천시스템 노트 작성 (듀얼에이전트 Review-Gate)
+**상태**: 리뷰대기 (①-A 작성자 초안 완료; ①-B 리서치 완료; ② 리뷰어 단계는 별도 진행)
+
+### 계획
+- [x] 사전점검: 23 transcript 2개(part1 18min·part2 43min) `--scan` 클린(ratio 0.57/0.46), PDF `23_recommender_systems.pdf` 존재, 녹음일 2026-05-26
+- [x] ①-A-1 codex(작성자): CLAUDE 계약·입력 파일 확인
+- [x] ①-A-2 codex(작성자): transcript 2개 시간순 독해 및 강의 범위 추출
+- [x] ①-A-3 codex(작성자): PDF에서 용어·수식·R 코드만 보완 확인
+- [x] ①-A-4 codex(작성자): `.qmd` 초안 작성
+- [x] ①-A-5 codex(작성자): 단일 render·frontmatter·Mermaid 검증 → `상태: 리뷰대기`
+- [x] ①-B codex(리서처): 추천시스템 토픽 official 소스 리서치 → `notes/_research/23-recommender-systems.md`
+- [ ] ② Claude(리뷰어): 초안↔리서치 교차검증·머지·DoD 검증 → 확정(전체 render 리스팅 갱신)
+- [ ] origin 중복본 `데이터애널리틱스-23_recommender_systems.goodnotes` 처리(이미 done에 존재 → 정리)
+
+### 문제 / 이슈
+- `23_recommender_systems_part2_43min.txt` 끝이 "그냥 바이러스가"에서 문장 중간처럼 종료됨. 기존 `--scan`은 클린이었고 전사 재실행은 금지되어 있으므로, 노트는 transcript에 명확히 나온 NCF cold-start 완화까지만 반영하고 끝부분 추정 보강은 하지 않음.
+
+### 비고
+- 작성자 결과: `data_analytics/notes/2026-05-26_23-recommender-systems.qmd` 생성. 단일 `quarto render` 성공, frontmatter 확인, Mermaid HTML `<pre class="mermaid mermaid-js">` 3개 확인. 상태: 리뷰대기.
+- 리서치: 완료 — `data_analytics/notes/_research/23-recommender-systems.md`
+- 입력: `data_analytics/transcript/23_recommender_systems_part1_18min.txt`, `..._part2_43min.txt`. 보조 PDF `data_analytics/pdf/23_recommender_systems.pdf`
+- 23강은 05-31 작업때 `- [ ]` 로 남아 미작성이던 강의. 이번에 완료 목표.
+
+---
+
+## 2026-06-03 23:20 — 20강 NN 전사 부분잘림 복구 + 노트 후반부 보강
+**상태**: 완료 (Claude 직접, 재전사는 백그라운드)
+
+### 계획
+- [x] 증상 진단: 20강(61분) 전사가 ~92% 지점(출력층 sigmoid 도중)에서 문장 중간 끊김 + 이후 `. . .` 점-런 1,176자. 실내용 ~13.6k자뿐
+- [x] 원인: whisper-1 통째 전사가 ~20분 지점 이후 점-런으로 무너짐. 전체 ratio 0.405라 stt.py 환각검사 통과(부분잘림 사각지대)
+- [x] 복구: `ffmpeg`로 20분×3+88초 4토막 분할 → 각 토막 `stt.py`(gpt-4o) 백그라운드 재전사 → 전부 정상(ratio 0.48~0.80, 점런 0)
+- [x] 합본 25,273자(원 실내용 대비 ~1.85배)로 transcript 교체. 원본은 `.truncated.bak` 백업
+- [x] 복구분 분석: 21강(deep NN)로 넘어가는 강의라 **역전파/경사하강은 20강에 없음**(강의 중 "학습법은 다음 강" 명시). 노트에 빠졌던 것 = softmax 계산예시, depth/표현위계(에지→객체), **train/val/test 분할(98:1:1, CV 안 함)**
+- [x] 노트 보강: §7 깊이·표현위계(+mermaid), §8 softmax 계산·예시, **§9 데이터 분할 신설**, lecture-summary 3줄 갱신
+- [x] `quarto render` 성공, mermaid 2개 `<pre class="mermaid">` 정상
+
+### 문제 / 이슈
+- stt.py 환각검사가 **부분 잘림(후반 점-런)** 을 못 걸러냄 → CLAUDE.md 함정 #4에 "부분 잘림 사각지대 + 길이대비 단어수/끝부분 점런 확인 + 분할 재전사" 보강.
+- 다른 긴 오디오도 같은 식으로 잘렸을 수 있음 → **전 과목 길이대비 전사량 일괄 점검 필요**(아래 비고).
+
+### 비고
+- 21강 노트는 역전파 다루는지 별도 확인 필요(20강에서 이월됨).
+
+---
+
+## 2026-06-03 23:30 — stt.py 환각검출 강화 + --scan + 전사 일괄점검
+**상태**: 완료 (Claude 직접·검증)
+
+### 계획
+- [x] `stt.py` 검출기 보강: `tail_unique_ratio`(꼬리 윈도우 비율, TAIL_RATIO=0.30) + `max_phrase_run`(n-gram 구 반복, PHRASE_RUN=12) 추가 → 부분잘림·구반복형 환각 포착
+- [x] 자동복구 강화: 긴 파일(23분 초과, gpt-4o 통째 불가)도 "원본유지 포기" 대신 `transcribe_split_gpt4o`(분할+gpt-4o)로 자동 재전사
+- [x] `--scan` 모드 신설: 전 transcript 환각/잘림 일괄 점검(읽기전용), 의심파일+재전사 명령 출력
+- [x] PHRASE_RUN 임계값 보정: 6→12 (7~11회는 실제 강의반복/stutter라 제외; 20+만 명백 루프). 경계 케이스 실측 후 결정(svm_part2 "그 문제만 풀고"×7=경미, chem6_part2 "KS는"×38=손상)
+- [x] 전체 스캔 결과: 손상 4개 색출 — **전부 화학**: 9-26_part1(prun62,tail0.26), chem6_part2(38), chem7_part1(22), chem7_part3(56,tail0.05). 복구된 20강·DA 전부 ok
+- [x] CLAUDE.md 함정 #4 + 스크립트 설명 갱신(--scan, 분할 자동복구)
+
+### 문제 / 이슈
+- 없음. (cpm은 모델별 장황도 차이로 단독판정 부적합 → 참고용 컬럼으로만, 하드신호는 ratio/tail/phrase)
+
+### 비고
+- 화학 손상 4건 재전사 완료(아래 항목 참조).
+
+---
+
+## 2026-06-03 23:38 — 화학 전사 4건 복구 (자동검출·복구 실전 검증)
+**상태**: 완료 (재전사 백그라운드, 원본은 .halluc.bak 백업)
+
+### 계획
+- [x] 손상 4건 `--force` 재전사: 9-26_part1, chem6_part2, chem7_part1, chem7_part3
+- [x] 9-26_part1: whisper-1 재전사도 환각(tail=0.05, phrase_run=128) → **신규 분할+gpt-4o 자동복구 발동** → ratio 0.62 채택 ✅ (자동화 실전 검증됨)
+- [x] chem6_part2·chem7_part1: whisper-1 재전사가 이번엔 클린(STT 비결정성) → 직접 채택
+- [x] chem7_part3: gpt-4o 재전사, 1.75KB→5.3KB(≈3배, 거의 통째 손상이었음), 정상 종료 확인
+- [x] 복구 후 `--scan`: **의심 transcript 0개** (전 과목 클린)
+
+### 문제 / 이슈
+- 없음.
+
+### 비고
+- ⚠️ **후속 필요**: 이 손상 전사로 작성된 화학 노트가 내용 누락됐을 수 있음 → ch6(이온결합)·ch7(공유결합)·9-26(ch9 열화학) 노트를 복구 transcript와 대조해 보강 필요. (20강과 동일 패턴 가능성)
+
+---
+
+## 2026-06-03 21:55 — 17강 부스팅 섹션 작성 (PDF 기준)
+**상태**: 완료 (Claude 직접 작성·검증)
+
+### 계획
+- [x] `ensemble_methods.pdf` 부스팅 파트 추출(pdftotext, p.18~23) — 이 PDF는 한글 정상 추출(mojibake 아님)
+- [x] 노트 7번 placeholder → 본문 작성: 개념(순차·잔차적합), 회귀 부스팅 알고리즘(초기화/갱신/최종), mermaid 순차도, 파라미터 3개(λ·B·d), 배깅 vs 부스팅
+- [x] 교수님 추가 설명(오너 제공) 반영: "λ는 bias-variance 직접관계 아님→U자형 아님→λ 고정하고 B 튜닝" → callout-important로 출처 명시
+- [x] lecture-summary에 부스팅 한 줄 추가
+- [x] `quarto render <file>` 성공, mermaid 2개 `<pre class="mermaid">` 정상(함정 #9 체크)
+
+### 문제 / 이슈
+- 작성 중 깨진 markdown 표 조각 남겼다가 즉시 제거. 그 외 없음.
+
+### 비고
+- 본문=PDF 슬라이드 기준, 교수님 구두 보충 1건은 별도 callout으로 구분 표기. 실습(gbm)은 18강.
+- 듀얼 에이전트 파이프라인 미가동(web 리서치 없이 PDF만).
+
+---
+
+## 2026-06-03 19:08 — Mermaid 렌더 안 됨 일괄 수정 (펜스 문법)
+**상태**: 완료 (Claude 직접 수정·검증)
+
+### 계획
+- [x] 증상 확인: DA 노트 14번부터 mermaid가 `graph LR ...` raw 텍스트로 출력(오너 제보)
+- [x] 원인: 펜스가 ` ```mermaid `(중괄호 X) → Quarto가 다이어그램으로 처리 안 함. 13번 SVM 노트는 ` ```{mermaid} ` 라 정상
+- [x] 레포 전체 `^```mermaid$` → ` ```{mermaid} ` 일괄 치환 (Python, 정확매칭): 9개 파일 16블록
+  - DA: 14-svm-practice, 15-decision-trees, 17-ensemble, 20-nn, 21-dnn, 22-image, 25-text, 26-word-embedding
+  - BC: 21-mev (3블록)
+- [x] 잔여 깨진 펜스 0 확인
+- [x] `quarto render`(전체) 24개 전부 에러 0, _site 갱신
+- [x] 노트14 HTML 검증: `<pre class="mermaid">` 형태로 출력 = 브라우저 렌더 정상, 깨진 코드블록 형태 소멸
+
+### 문제 / 이슈
+- `quarto render` 는 ` ```mermaid `(잘못)도 에러 없이 통과 → 렌더 성공만으론 못 걸러냄. HTML에 `<pre class="mermaid">` 있는지로 확인해야 함. → CLAUDE.md 함정 #9 추가.
+
+### 비고
+- 기존 DoD의 "렌더 성공" 체크가 이 버그를 못 잡았음. mermaid 쓰는 노트는 펜스 중괄호 여부를 별도 확인 권장.
+
+---
+
+## 2026-06-03 19:05 — SVM 노트 7번 OvA 그림 + 부연 추가
+**상태**: 완료 (Claude 직접 작성·검증)
+
+### 계획
+- [x] OvA(One-vs-All) 결정규칙 설명용 그림 생성 (matplotlib) — 클러스터 3개 + 기하적으로 일관된 'k vs 나머지' 경계, 부호거리 $f_k$ 비교
+- [x] `data_analytics/notes/img/svm-ova-multiclass.png` 저장
+- [x] 노트 7번에 `![]()` 임베드(@fig-ova) + callout-note(학습 K번 독립 / 예측 부호최대 / 절댓값 아님) 추가
+- [x] `quarto render <file>` 단일 렌더 성공
+
+### 문제 / 이슈
+- 1차 그림은 목표 f값 맞추려 법선·offset을 임의 배치 → 경계가 실제 3-클래스 배치와 불일치(오너가 지적). 클러스터 3개를 깔고 각 OvA 경계를 centroid 기반으로 진짜 분리하도록 재작성해 해결.
+- 한글 폰트(NanumGothic)에 ₖ(아래첨자) 글리프 없어 깨짐 → `f_k` 일반표기로 교체.
+
+### 비고
+- 외부 web 출처 없음(개념 도식, ISLR ch.9 수준). 듀얼 에이전트 미가동.
+- 본문 OvA/OvO 텍스트는 기존 그대로, 그림·부연만 보강.
+
+---
+
+## 2026-06-03 18:42 — SVM 노트 5번 부연 설명 추가
+**상태**: 완료 (Claude 직접 작성·검증)
+
+### 계획
+- [x] 오너 질문(쌍대 형식·내적·margin 이해)에 맞춰 `2026-04-11_support-vector-machines.qmd` 5번 섹션에 callout-note 부연 3개 추가
+  - 쌍대 형식 관점 전환($\beta=\sum\alpha_i x_i$ 직관 포함)
+  - 첨자 $i$(데이터)·$j$(feature)·$x$(새 점) 의미 + 학습/예측 시 $x$ 자리 차이
+  - margin 최대화 = $\lVert\beta\rVert$ 최소화 4단계
+- [x] `quarto render <file>` 단일 렌더 성공 (HTML 생성, 에러 0)
+
+### 문제 / 이슈
+- 없음. (site-url 누락 WARN 은 기존부터 있던 무관 경고)
+
+### 비고
+- 부연은 오너와의 대화에서 도출한 개념 설명(ISLR ch.9 수준 표준 내용)이라 외부 web 출처는 달지 않음. 듀얼 에이전트 파이프라인은 미가동(단일 작성).
+- 본문 $\binom{n}{2}$ 표기는 그대로 유지 — $O(n^2)$ 로 정확, 부연에 카운팅 의미만 명시.
+
+---
+
 ## 2026-06-02 16:40 — DA 25/26 + 블록체인 21 노트 작성
 **상태**: 완료 (Claude 직접 작성·검증)
 
@@ -239,3 +419,19 @@
 - 오디오는 확장자 없이 attachments/ 에 저장, 매직바이트(ftyp mp42)로 판별
 - 6장 오디오 2.72MB+9.66MB, 7장 0.36MB+9.24MB+3.60MB
 - 산출물: notes/2026-05-11_ch6-ionic-bonding.qmd, notes/2026-05-18_ch7-covalent-bonding.qmd
+
+## 2026-06-04 11:30 — data_analytics 21강 노트 보강 (온라인 강의 부분)
+**상태**: 완료
+- [x] 21강 후반 온라인(녹화) 강의 부분이 노트에 누락된 것 확인 (기존 §10 정규화까지만 있었음)
+- [x] PDF(pdf/21_deep_neural_networks.pdf p.19~21) 기준으로 §11 하이퍼파라미터, §12 실무 고려사항 추가
+- [x] 교수 구두 설명 추가(오너 제공): 튜닝 순서 = architecture→training→regularization 순차, architecture는 표준 구성 써서 잘 튜닝 안 함 → callout으로 별도 표기
+- [x] lecture-summary 보강, quarto render 단일 렌더 성공(에러 0)
+- 비고: lecture 17 boosting 선례와 동일 패턴(온라인/녹화 강의 = PDF 기준 + 구두 추가분만 별도 표기). 웹 리서치 불필요(오너 제공 + PDF)한 소규모 추가라 듀얼에이전트 게이트 생략하고 인라인 처리.
+
+## 2026-06-04 13:35 — data_analytics 22강 노트 앞부분(온라인 강의) 보강
+**상태**: 완료
+- [x] 기존 22강 노트는 응용부(얼굴인식/객체탐지/전이학습)만 상세, 앞부분 CNN 기초는 §1 한 단락으로 압축돼 있었음
+- [x] PDF(pdf/22_-image_applications_representation_learning.pdf p.3~16) 기준으로 앞부분 확장: §1 표현→응용, §2 FC 한계(공간구조·파라미터 150,528→약963만), §3 합성곱(필터·패딩·채널), §4 다중필터·풀링·전체구조(+모델진화 LeNet~EfficientNet), §5 이미지분류(softmax/CE)·계층적 표현학습
+- [x] 응용부 섹션 번호 2/3/4 → 6/7/8 로 재배치
+- [x] quarto render 성공, mermaid 2개(CNN 파이프라인+YOLO) 정상 렌더(`mermaid mermaid-js`)
+- 비고: 오너 확인 — 앞부분은 온라인 강의, PDF 외 구두 추가분 없음 → PDF 그대로 작성. 웹 리서치 불필요한 PDF 전사라 듀얼에이전트 게이트 생략, 인라인 처리. (21강 보강과 동일 패턴)

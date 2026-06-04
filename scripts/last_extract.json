@@ -1,60 +1,22 @@
 [
   {
-    "source": "데이터애널리틱스-25_text_analytics.goodnotes",
+    "source": "데이터애널리틱스-23_recommender_systems.goodnotes",
     "subject": "data_analytics",
     "audio": [
       {
-        "file": "data_analytics/audio/25_text_analytics_part1_19min.m4a",
-        "min": 19,
-        "creation_time": "2026-05-26T04:14:59.000000Z"
+        "file": "data_analytics/audio/23_recommender_systems_part1_18min.m4a",
+        "min": 18,
+        "creation_time": "2026-05-21T04:15:52.000000Z"
       },
       {
-        "file": "data_analytics/audio/25_text_analytics_part2_48min.m4a",
-        "min": 48,
-        "creation_time": "2026-05-28T03:52:59.000000Z"
+        "file": "data_analytics/audio/23_recommender_systems_part2_43min.m4a",
+        "min": 43,
+        "creation_time": "2026-05-26T03:54:33.000000Z"
       }
     ],
     "pdf": [
-      "data_analytics/pdf/25_text_analytics.pdf"
+      "data_analytics/pdf/23_recommender_systems.pdf"
     ],
-    "date_hint": "2026-05-26",
-    "moved_to_done": true
-  },
-  {
-    "source": "데이터애널리틱스-26_word_embedding.goodnotes",
-    "subject": "data_analytics",
-    "audio": [
-      {
-        "file": "data_analytics/audio/26_word_embedding_part1_13min.m4a",
-        "min": 13,
-        "creation_time": "2026-05-28T04:06:10.000000Z"
-      },
-      {
-        "file": "data_analytics/audio/26_word_embedding_part2_51min.m4a",
-        "min": 51,
-        "creation_time": "2026-06-02T03:54:46.000000Z"
-      }
-    ],
-    "pdf": [
-      "data_analytics/pdf/26_word_embedding.pdf"
-    ],
-    "date_hint": "2026-05-28",
-    "moved_to_done": true
-  },
-  {
-    "source": "블록체인-21.goodnotes",
-    "subject": "blockchain",
-    "audio": [
-      {
-        "file": "blockchain/audio/21_26min.m4a",
-        "min": 26,
-        "creation_time": "2026-06-01T08:35:29.000000Z"
-      }
-    ],
-    "pdf": [
-      "blockchain/pdf/21.pdf"
-    ],
-    "date_hint": "2026-06-01",
-    "moved_to_done": true
+    "date_hint": "2026-05-21"
   }
 ]

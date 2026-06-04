@@ -50,11 +50,13 @@ svmfit <- svm(y~., data=dat, kernel="linear", cost=10, scale=TRUE)
 plot(svmfit, dat); svmfit$index    # support vector 인덱스
 ```
 
+![](img/2026-06-03-19-10-46.png)
+
 - 그림에서 **`X` 표시 = 서포트 벡터**(마진 위/안쪽에 위치한 점), `o` = 그 외 데이터.
 - `cost=10` → 서포트 벡터 7개. `cost=0.1` 로 줄이면(= 강의노트 $C$ 가 커짐 = 마진 위반 허용 ↑) → 마진이 커지고 서포트 벡터 수가 크게 늘어남.
 - 더 많은 데이터가 초평면을 결정 → **모델 변동성(variance) ↓**.
 
-```mermaid
+```{mermaid}
 graph LR
     A["cost ↑"] --> B["마진 ↓"] --> C["서포트 벡터 ↓"] --> D["variance ↑ (복잡)"]
     E["cost ↓"] --> F["마진 ↑"] --> G["서포트 벡터 ↑"] --> H["variance ↓ (단순)"]
@@ -102,6 +104,12 @@ tune.out <- tune(svm, y~., data=train, kernel="radial",
 # best: cost=10, gamma=1, error=0.07 (accuracy 93%)
 ```
 
+::: {.callout-note title="cater 패키지와 kernlab의 SVM"}
+`caret`의 train함수에 `method="svmRadial"`로 `kernlab`의 SVM을 사용할 수 있다.
+
+이때 사용하는 parameter는 `sigma(gamma)`와 `C(cost)`이다.
+:::
+
 ::: {.callout-note title="polynomial 커널"}
 `kernel="polynomial"` 의 튜닝 파라미터는 차수 `degree`($D$). 보통 2~6 범위(그 이상은 과도하게 복잡). 예제에서 best `cost=10, degree=4` → error 0.12 로, 일반적으로 **RBF(0.07)가 더 우수**. 권장 순서: 먼저 linear → 부족하면 RBF.
 :::
@@ -132,5 +140,5 @@ svmfit <- svm(y~., data=khan.train, kernel="linear", cost=10)
 - R `cost` 는 강의노트 $C$ 와 **반대**: cost↑ → 마진↓ → SV↓ → variance↑.
 - **RBF `gamma`**: ↑ 일수록 국소적(복잡, variance↑), ↓ 일수록 단순. KNN의 $K$ 와 반대 방향.
 - 커널 선택: **linear 먼저, 부족하면 RBF**. $n<p$ 면 linear로 충분.
-- `cost`·`gamma` 는 `tune()` 의 10-fold CV로, 처음엔 지수 단위로 넓게 튜닝.
+- `cost`·`gamma` 는 `tune()` 의 10-fold CV로, 처음엔 지수 단위로 넓게 튜닝. 주로 $10^x$나 $2^x$ 형태로 범위 설정하는 것이 효과적이다.
 :::

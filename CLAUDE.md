@@ -32,17 +32,21 @@
 2. **STT API 키**: 환경변수 `OPENAI_API_KEY`는 만료/무효(401). → `openclaw.json` 의 `skills.entries.openai-whisper-api.apiKey` 사용.
 3. **gpt-4o-transcribe는 오디오 1400초(~23분) 길이 제한**(초과 시 400). → **23분 초과 녹음은 whisper-1**(25MB 한도, 길이 무관) 사용. 25MB 초과면 ffmpeg 분할.
 4. **whisper-1은 조용/반복 구간에서 환각 루프**(같은 문장 수백 회 반복) 가능. **gpt-4o-transcribe도 마찬가지**. → 전사 후 `unique/words` 비율로 검사(0.2 미만 또는 극단적 반복이면 의심), 발생 시 **다른 모델로 재전사**. 짧은(<23분) 파일은 gpt-4o 우선.
+   - ⚠️ **부분 잘림/구반복 사각지대**(과거 20강 NN·일부 화학에서 발생): 후반부만 `. . .` 점-런 또는 "같은 구 반복"(예: "KS는 KS는" ×38)으로 끊겨도 **전역 ratio·단일토큰 run 검사를 통과**함. → stt.py 검출기 보강됨: **꼬리 윈도우 unique 비율**(`TAIL_RATIO`)과 **구(n-gram) 반복 run**(`PHRASE_RUN`)을 추가로 검사, 긴 파일은 통째 재시도 대신 **분할+gpt-4o 자동 재전사**. 기존 transcript 일괄 점검은 `python3 scripts/stt.py --scan`. 노트 작성 전 의심 파일은 이 스캔으로 먼저 확인.
 5. **긴 전사를 foreground 명령으로 오래 기다리지 말 것**: harness가 장시간 대기 명령을 137로 kill하며, 그때 같은 셸의 백그라운드 잡도 함께 죽을 수 있음. → 전사는 `nohup ... &` 로 띄우고, 짧은 폴링으로 상태만 확인. 완료 파일은 개별 검증.
 6. **GoodNotes PDF의 한글은 추출 시 깨짐(mojibake)** — 폰트 인코딩 때문. R 코드·영어·수식·숫자는 정상 추출됨. → 노트는 **녹음본(transcript) 위주**로 쓰고 PDF는 코드/용어/수치 보완용으로만.
 7. **노트 `date`·파일명은 강의 녹음일**(audio `creation_time`) 기준. 처리일 아님. 파일명은 `YYYY-MM-DD_<강의번호>-<topic>.qmd`.
 8. **Quarto는 여러 .qmd 동시 렌더 시 경로 꼬임** 발생. → 검증은 `quarto render <파일>` 로 **하나씩**, 또는 전체는 `quarto render`(인자 없이).
+9. **Mermaid 다이어그램 펜스는 반드시 ` ```{mermaid} ` (중괄호 O)**. ` ```mermaid `(중괄호 X)로 쓰면 렌더 안 되고 `graph LR ...` 소스가 raw 코드블록으로 그대로 출력됨. → 노트 작성/검수 시 mermaid 블록은 중괄호 형태인지 확인. (`quarto render` 는 둘 다 에러 없이 통과하므로 렌더 성공만으로는 못 걸러냄 — HTML에 `<pre class="mermaid">` 있는지로 확인.)
 
 ## 자동화 스크립트 (`scripts/`)
 
 워크플로 1~2번(원본 추출·STT)은 스크립트로 자동화됨. 함정 #1~#4·#7 이 코드에 반영되어 있으니 **수작업 대신 먼저 사용**한다.
 
 - `python3 scripts/extract.py` — `origin/*.goodnotes` 추출 + 과목 자동분류(prefix) + 매직바이트로 audio/pdf 분리 + creation_time 으로 녹음일 후보 산출 → `origin/done/` 이동. `--dry-run` 으로 미리보기.
-- `python3 scripts/stt.py --all` — 미전사 오디오 전부 전사. 길이로 모델선택(gpt-4o↔whisper-1), 25MB 초과 분할, 환각 루프 검사 후 자동 재전사, API 키는 openclaw.json 폴백. 긴 작업은 `nohup ... &` 로.
+- `python3 scripts/stt.py --all` — 미전사 오디오 전부 전사. 길이로 모델선택(gpt-4o↔whisper-1), 25MB 초과 분할, 환각 검사 후 자동 재전사, API 키는 openclaw.json 폴백. 긴 작업은 `nohup ... &` 로.
+  - 환각 검사 = 전역 ratio + 단일토큰 run + **꼬리 윈도우 비율** + **구(n-gram) 반복 run**. 길어서 통째 폴백 불가한 파일은 **분할 후 gpt-4o 재전사**로 자동 복구.
+- `python3 scripts/stt.py --scan` — 기존 transcript 를 환각/부분잘림 관점에서 **일괄 점검(읽기전용)**, 의심 파일과 재전사 명령을 출력. 새 노트 작업 전/후 점검용.
 - 남는 수작업 = **교정 + .qmd 노트 작성(3~4번)**: 판단이 필요한 단계라 LLM 이 직접. 스크립트가 깔아준 transcript/녹음일을 입력으로 사용.
 - ⚠️ chemistry slug 는 한글이 빠져(예: `7-26`) 다소 불명확 → 노트 .qmd 명명 시 PDF/내용 보고 topic 보정.
 

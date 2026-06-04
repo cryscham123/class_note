@@ -37,6 +37,12 @@ HALLUC_RATIO = 0.20       # 함정 #4: unique/words 이 값 미만이면 환각 
 # 극단적 반복 + 어휘 다양성도 낮을 때만 환각으로 본다(오판 방지).
 HALLUC_RUN = 200
 HALLUC_RUN_RATIO = 0.35
+# 함정 #4 보강 — 전역 ratio 만으론 '뒤쪽만 망가진 부분 환각/잘림'을 못 잡는다.
+TAIL_FRAC = 0.25          # 꼬리 윈도우(마지막 비율)
+TAIL_RATIO = 0.30         # 꼬리 unique 비율이 이 값 미만이면 부분 환각/잘림 의심
+PHRASE_RUN = 12           # 같은 2~4-gram 구(phrase)가 연속 이만큼 반복되면 환각 루프
+                          # (7~11회는 실제 강의 반복/사소한 stutter 일 수 있어 제외; 20+ 는 명백한 루프)
+MIN_CPM = 120             # 분당 글자수가 이 값 미만이면 부분잘림 의심(파일명 'NNmin' 기준, 참고용)
 
 
 # ---------- API 키 (함정 #2) ----------
@@ -138,12 +144,49 @@ def hallucination_score(text: str) -> tuple[float, int]:
     return (ratio, best)
 
 
+def tail_unique_ratio(text: str, frac: float = TAIL_FRAC) -> float:
+    """꼬리 윈도우(마지막 frac)의 unique/words 비율. 뒤쪽만 망가진 경우를 잡는다."""
+    words = re.findall(r"\S+", text)
+    if len(words) < 40:
+        return 1.0
+    tail = words[int(len(words) * (1 - frac)):]
+    return len(set(tail)) / max(1, len(tail))
+
+
+def max_phrase_run(text: str, n_min: int = 2, n_max: int = 4) -> int:
+    """같은 n-gram 구(phrase)가 연속으로 반복되는 최대 횟수.
+       단일 토큰 run 검사로는 못 잡는 '구 반복형' 환각(예: 'N2라는 화합물에' ×수십회)을 포착."""
+    words = re.findall(r"\S+", text)
+    best = 0
+    for n in range(n_min, n_max + 1):
+        if len(words) < 2 * n:
+            continue
+        i = 0
+        while i + n <= len(words):
+            gram = words[i:i + n]
+            reps, j = 1, i + n
+            while j + n <= len(words) and words[j:j + n] == gram:
+                reps += 1; j += n
+            if reps > best:
+                best = reps
+            i = j if reps > 1 else i + 1
+    return best
+
+
 def looks_hallucinated(text: str) -> bool:
     ratio, run = hallucination_score(text)
     if ratio < HALLUC_RATIO:
         return True
     # 극단적 연속반복은 어휘 다양성까지 낮을 때만 환각으로 간주
-    return run >= HALLUC_RUN and ratio < HALLUC_RUN_RATIO
+    if run >= HALLUC_RUN and ratio < HALLUC_RUN_RATIO:
+        return True
+    # 보강 ①: 꼬리만 무너진 부분 환각/잘림(점-런·문구반복으로 끝나는 경우)
+    if tail_unique_ratio(text) < TAIL_RATIO:
+        return True
+    # 보강 ②: 구(phrase) 반복 루프
+    if max_phrase_run(text) >= PHRASE_RUN:
+        return True
+    return False
 
 
 def transcribe_file(path: str, api_key: str, model: str | None = None) -> str:
@@ -170,28 +213,55 @@ def transcribe_file(path: str, api_key: str, model: str | None = None) -> str:
     return retry_if_hallucinated(path, dur, chosen, txt, api_key, indent="   ")
 
 
+def transcribe_split_gpt4o(path: str, api_key: str, indent: str = "   ") -> str:
+    """긴 파일을 SPLIT_SEC(≤23분) 단위로 분할해 각 토막을 gpt-4o 로 전사·합치기.
+       whisper-1 통째 전사가 특정 구간에서 무너지는 경우(점-런·문구반복)를 우회한다."""
+    segs = split_audio(path)
+    parts = []
+    for i, seg in enumerate(segs, 1):
+        print(f"{indent}· seg {i}/{len(segs)} [gpt-4o 분할재전사]", flush=True)
+        parts.append(transcribe_one(seg, GPT4O, api_key))
+    return "\n".join(parts)
+
+
+def _accept_alt(alt_txt: str, ratio: float) -> bool:
+    """대체 전사가 더 나으면 채택: 환각 신호가 사라졌거나 전역 다양성이 개선되면."""
+    return (not looks_hallucinated(alt_txt)) or hallucination_score(alt_txt)[0] > ratio
+
+
 def retry_if_hallucinated(path: str, dur: float, model: str, txt: str,
                           api_key: str, indent: str = "   ") -> str:
-    """환각 의심 시 다른 모델로 1회 재전사. 단:
-       - 더 나쁘거나 실패하면 원본을 유지(데이터 손실 방지).
-       - 폴백 모델이 길이 제한을 못 넘기면(gpt-4o 23분 초과) 재전사 생략."""
+    """환각 의심 시 자동 재전사. 더 나쁘거나 실패하면 원본 유지(데이터 손실 방지)."""
     if not looks_hallucinated(txt):
         return txt
     ratio, run = hallucination_score(txt)
+    tail = tail_unique_ratio(txt)
+    prun = max_phrase_run(txt)
     alt = other_model(model)
-    # 함정 #3: gpt-4o 는 23분 초과 처리 불가 → 폴백 무의미, 원본 유지
+    print(f"{indent}⚠️ 환각 의심(ratio={ratio:.2f}, run={run}, tail={tail:.2f}, "
+          f"phrase_run={prun})", flush=True)
+
+    # 함정 #3: 폴백이 gpt-4o 인데 23분 초과면 통째 재전사 불가 → 분할 후 gpt-4o 로 우회
     if alt == GPT4O and dur >= LEN_LIMIT_SEC:
-        print(f"{indent}⚠️ 환각 의심(ratio={ratio:.2f}, run={run}) "
-              f"이지만 길이상 {alt} 재전사 불가 → 원본 유지(수동 확인 권장)", flush=True)
+        print(f"{indent}   → 길이상 통째 불가, ffmpeg 분할 + gpt-4o 재전사 시도", flush=True)
+        try:
+            alt_txt = transcribe_split_gpt4o(path, api_key, indent + "   ")
+        except Exception as e:
+            print(f"{indent}   분할 재전사 실패({str(e)[:80]}) → 원본 유지(수동 확인 권장)", flush=True)
+            return txt
+        if _accept_alt(alt_txt, ratio):
+            print(f"{indent}   ✅ 분할 재전사 채택", flush=True)
+            return alt_txt
+        print(f"{indent}   분할 재전사도 개선 없음 → 원본 유지(수동 확인 권장)", flush=True)
         return txt
-    print(f"{indent}⚠️ 환각 의심(ratio={ratio:.2f}, run={run}) → {alt} 재전사", flush=True)
+
+    print(f"{indent}   → {alt} 재전사", flush=True)
     try:
         alt_txt = transcribe_one(path, alt, api_key)
     except Exception as e:
         print(f"{indent}   재전사 실패({str(e)[:80]}) → 원본 유지", flush=True)
         return txt
-    # 어휘 다양성이 더 높은(=환각 적은) 쪽을 채택
-    if hallucination_score(alt_txt)[0] > ratio:
+    if _accept_alt(alt_txt, ratio):
         return alt_txt
     print(f"{indent}   재전사도 개선 없음 → 원본 유지(수동 확인 권장)", flush=True)
     return txt
@@ -235,6 +305,41 @@ def run_one(audio: str, api_key: str, force: bool):
     print(f"   ✅ {os.path.relpath(out, ROOT)}  (ratio={ratio:.2f})")
 
 
+def cmd_scan() -> None:
+    """기존 transcript 들을 환각/부분잘림 관점에서 일괄 점검(읽기 전용)."""
+    import glob
+    files = sorted(glob.glob(os.path.join(ROOT, "*", "transcript", "*.txt")))
+    files = [f for f in files if not f.endswith(".bak")]
+    print(f"== transcript {len(files)}개 점검 (⚠️=재전사 권장) ==")
+    print(f"{'STATUS':<10}{'min':>4}{'c/min':>7}{'ratio':>7}{'tail':>6}{'prun':>6}  file")
+    suspects = []
+    for tp in files:
+        t = open(tp, encoding="utf-8", errors="ignore").read()
+        w = re.findall(r"\S+", t)
+        ratio = len(set(w)) / max(1, len(w))
+        tail = tail_unique_ratio(t)
+        prun = max_phrase_run(t)
+        m = re.search(r"(\d+)min", os.path.basename(tp))
+        mins = int(m.group(1)) if m else None
+        cpm = round(len(t) / mins) if mins else None
+        # 하드 신호: ratio/tail/phrase. cpm 은 참고용(모델별 장황도 차이로 단독 판정 부적합)
+        bad = (ratio < HALLUC_RATIO) or (tail < TAIL_RATIO) or (prun >= PHRASE_RUN)
+        status = "⚠️SUSPECT" if bad else "ok"
+        if bad:
+            suspects.append(os.path.relpath(tp, ROOT))
+        cpm_s = str(cpm) if cpm is not None else "-"
+        cpm_s += "!" if (cpm is not None and cpm < MIN_CPM) else ""
+        print(f"{status:<10}{str(mins or '-'):>4}{cpm_s:>7}{ratio:>7.2f}{tail:>6.2f}{prun:>6}  "
+              f"{os.path.relpath(tp, ROOT)}")
+    if suspects:
+        print(f"\n재전사 권장 {len(suspects)}개:")
+        for s in suspects:
+            audio_guess = s.replace('/transcript/', '/audio/').rsplit('.', 1)[0]
+            print(f"  python3 scripts/stt.py {audio_guess}.<ext> --force   # ({s})")
+    else:
+        print("\n의심 transcript 없음.")
+
+
 def main():
     ap = argparse.ArgumentParser(description="Whisper 자동 전사 (모델선택·분할·환각검사 내장)")
     ap.add_argument("audio", nargs="?", help="오디오 파일 경로")
@@ -243,7 +348,12 @@ def main():
     ap.add_argument("--out", help="단일 파일 전사 결과 경로")
     ap.add_argument("--force", action="store_true", help="기존 transcript 무시")
     ap.add_argument("--model", choices=[GPT4O, WHISPER], help="모델 강제 지정")
+    ap.add_argument("--scan", action="store_true", help="기존 transcript 환각/부분잘림 일괄 점검(읽기전용)")
     args = ap.parse_args()
+
+    if args.scan:
+        cmd_scan()
+        return
 
     api_key = resolve_api_key()
 
